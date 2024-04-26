@@ -3,32 +3,34 @@ import contactsService from "../services/contactsServices.js";
 export const getAllContacts = (req, res) => {
   const contacts = contactsService.listContacts();
 
-  res.send(contacts);
+  res.status(200).send(contacts);
 };
 
 export const getOneContact = (req, res) => {
-  const id = req.query[id];
+  const { id } = req.params;
   const contact = contactsService.getContactById(id);
 
-  res.send(contact);
+  res.status(200).send(contact);
 };
 
 export const deleteContact = (req, res) => {
-  const id = req.query[id];
+  const { id } = req.params;
   const deletedContact = contactsService.removeContact(id);
 
-  res.send(deletedContact);
+  res.status(200).send(deletedContact);
 };
 
 export const createContact = (req, res) => {
-  const data = req.query;
-  const newContact = contactsService.addContact(data);
+  const { name, email, phone } = req.body;
+  const newContact = contactsService.addContact(name, email, phone);
 
-  res.send(newContact);
+  res.status(201).send(newContact);
 };
 
 export const updateContact = (req, res) => {
-    const updatedContact = contactsService.
+  const { id } = req.params;
+  const data = req.body;
 
-  res.send(newContact);
+  const updatedContact = updateContact(id, data);
+  res.status(200).send(updatedContact);
 };

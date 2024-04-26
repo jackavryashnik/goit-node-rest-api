@@ -1,6 +1,6 @@
 import * as fs from "node:fs/promises";
 import path from "path";
-import nanoid from "nanoid";
+import crypto from "node:crypto";
 
 const contactsPath = path.resolve("db/contacts.json");
 
@@ -30,7 +30,7 @@ async function removeContact(contactId) {
 }
 
 async function addContact(name, email, phone) {
-  const newContact = { id: nanoid(), name, email, phone };
+  const newContact = { id: crypto.randomUUID(), name, email, phone };
   const allContacts = await listContacts();
 
   allContacts.push(newContact);
