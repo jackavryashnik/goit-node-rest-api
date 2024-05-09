@@ -4,6 +4,7 @@ import validateBody from "../helpers/validateBody.js";
 import {
   createContactSchema,
   updateContactSchema,
+  updateFavoriteSchema,
 } from "../schemas/contactsSchemas.js";
 
 const router = express.Router();
@@ -14,6 +15,6 @@ router.get("/:id", ContactsControllers.getOneContact);
 router.delete("/:id", ContactsControllers.deleteContact);
 router.post("/", jsonParser, validateBody(createContactSchema), ContactsControllers.createContact);
 router.put("/:id", jsonParser, validateBody(updateContactSchema), ContactsControllers.updateContact);
-router.patch('/:id/favorite', validateBody(updateContactSchema), jsonParser, ContactsControllers.updateStatusContact)
+router.patch('/:id/favorite', validateBody(updateFavoriteSchema), jsonParser, ContactsControllers.updateStatusContact)
 
 export default router;
