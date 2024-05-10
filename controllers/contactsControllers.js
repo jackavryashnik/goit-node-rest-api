@@ -28,15 +28,8 @@ const getOneContact = async (req, res, next) => {
 };
 
 const createContact = async (req, res, next) => {
-  const contact = {
-    name: req.body.name,
-    email: req.body.email,
-    phone: req.body.phone,
-    favorite: req.body.favorite,
-  };
-
   try {
-    const contact = await Contact.create(contact);
+    const contact = await Contact.create(req.body);
 
     res.status(201).json(contact);
   } catch (error) {
@@ -46,12 +39,7 @@ const createContact = async (req, res, next) => {
 
 const updateContact = async (req, res, next) => {
   const { id } = req.params;
-  const contact = {
-    name: req.body.name,
-    email: req.body.email,
-    phone: req.body.phone,
-    favorite: req.body.favorite,
-  };
+  const contact = req.body;
 
   try {
     const updatedContact = await Contact.findByIdAndUpdate(id, contact, {
