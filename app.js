@@ -5,7 +5,6 @@ import morgan from "morgan";
 import cors from "cors";
 
 import contactsRouter from "./routes/index.js";
-import HttpError from "./helpers/HttpError.js";
 
 import "./db/db.js";
 
@@ -14,13 +13,6 @@ const app = express();
 app.use(morgan("tiny"));
 app.use(cors());
 app.use(express.json());
-
-app.use('/api/contacts/:id', (req, res, next) => {
-  if (!mongoose.isValidObjectId(req.params.id)) {
-    next(HttpError(400, "Invalid Id"));
-  }
-  next()
-});
 
 app.use("/api", contactsRouter);
 
