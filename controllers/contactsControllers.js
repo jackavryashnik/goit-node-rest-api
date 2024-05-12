@@ -1,18 +1,23 @@
-import contactsServices from "../services/contactsServices.js";
 import HttpError from "../helpers/HttpError.js";
+import Contact from "../models/contact.js";
 
-export const getAllContacts = async (req, res) => {
-  const contacts = await contactsServices.listContacts();
+const getAllContacts = async (req, res, next) => {
+  try {
+    const contacts = await Contact.find();
 
-  res.json(contacts);
+    res.json(contacts);
+  } catch (error) {
+    next(error);
+  }
 };
 
-export const getOneContact = async (req, res, next) => {
-  try {
-    const { id } = req.params;
-    const contact = await contactsServices.getContactById(id);
+const getOneContact = async (req, res, next) => {
+  const { id } = req.params;
 
-    if (!contact) {
+  try {
+    const contact = await Contact.findById(id);
+
+    if (contact === null) {
       throw HttpError(404);
     }
 
@@ -22,34 +27,26 @@ export const getOneContact = async (req, res, next) => {
   }
 };
 
-export const deleteContact = async (req, res, next) => {
+const createContact = async (req, res, next) => {
   try {
-    const { id } = req.params;
-    const contact = await contactsServices.removeContact(id);
+    const contact = await Contact.create(req.body);
 
-    if (!contact) {
-      throw HttpError(404);
-    }
-
-    res.json(contact);
+    res.status(201).json(contact);
   } catch (error) {
     next(error);
   }
 };
 
-export const createContact = async (req, res) => {
+const updateContact = async (req, res, next) => {
+  const { id } = req.params;
   const contact = req.body;
-  const newContact = await contactsServices.addContact(contact);
 
-  res.status(201).json(newContact);
-};
-
-export const updateContact = async (req, res, next) => {
   try {
-    const { id } = req.params;
-    const updatedContact = await modifyContact(id, req.body);
+    const updatedContact = await Contact.findByIdAndUpdate(id, contact, {
+      new: true,
+    });
 
-    if (!updatedContact) {
+    if (updatedContact === null) {
       throw HttpError(404);
     }
 
@@ -57,4 +54,48 @@ export const updateContact = async (req, res, next) => {
   } catch (error) {
     next(error);
   }
+};
+
+const deleteContact = async (req, res, next) => {
+  const { id } = req.params;
+
+  try {
+    const contact = await Contact.findByIdAndDelete(id);
+
+    if (contact === null) {
+      throw HttpError(404);
+    }
+
+    res.json(contact);
+  } catch (error) {
+    next(error);
+  }
+};
+
+const updateStatusContact = async (req, res, next) => {
+  const { id } = req.params;
+  const favorite = req.body.favorite;
+
+  try {
+    const updatedContact = await Contact.findByIdAndUpdate(id, favorite, {
+      new: true,
+    });
+
+    if (updatedContact === null) {
+      throw HttpError(404);
+    }
+
+    res.json(updatedContact);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export default {
+  getAllContacts,
+  getOneContact,
+  createContact,
+  updateContact,
+  deleteContact,
+  updateStatusContact,
 };
