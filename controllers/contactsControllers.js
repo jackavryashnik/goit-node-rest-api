@@ -3,7 +3,7 @@ import Contact from "../models/contact.js";
 
 const getAllContacts = async (req, res, next) => {
   try {
-    const contacts = await Contact.find();
+    const contacts = await Contact.find({ ownerId: req.user.id });
 
     res.json(contacts);
   } catch (error) {
@@ -18,6 +18,10 @@ const getOneContact = async (req, res, next) => {
     const contact = await Contact.findById(id);
 
     if (contact === null) {
+      throw HttpError(404);
+    }
+
+    if (contact.ownerId.toString() !== req.user.id) {
       throw HttpError(404);
     }
 
@@ -58,6 +62,10 @@ const updateContact = async (req, res, next) => {
       throw HttpError(404);
     }
 
+    if (updatedContact.ownerId.toString() !== req.user.id) {
+      throw HttpError(404);
+    }
+
     res.json(updatedContact);
   } catch (error) {
     next(error);
@@ -71,6 +79,10 @@ const deleteContact = async (req, res, next) => {
     const contact = await Contact.findByIdAndDelete(id);
 
     if (contact === null) {
+      throw HttpError(404);
+    }
+
+    if (contact.ownerId.toString() !== req.user.id) {
       throw HttpError(404);
     }
 
