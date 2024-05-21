@@ -1,5 +1,6 @@
 import express from "express";
 
+import authMiddle from "../middleware/auth.js";
 import validateBody from "../helpers/validateBody.js";
 import {registerUserSchema, loginUserSchema} from '../schemas/usersSchemas.js'
 
@@ -10,7 +11,7 @@ const jsonParser = express.json();
 
 router.post("/register", jsonParser, validateBody(registerUserSchema), UsersController.register);
 router.post("/login", jsonParser, validateBody(loginUserSchema), UsersController.login);
-router.post("/logout", UsersController.logout);
-router.post("/current", UsersController.current);
+router.post("/logout", authMiddle, UsersController.logout);
+router.post("/current", authMiddle, UsersController.current);
 
 export default router;
