@@ -3,7 +3,7 @@ import User from "../models/user.js";
 import jwt from "jsonwebtoken";
 
 async function register(req, res, next) {
-  const { name, email, password } = req.body;
+  const { email, password } = req.body;
 
   const emailTolowerCase = email.toLowerCase();
 
@@ -17,7 +17,6 @@ async function register(req, res, next) {
     const passwordHash = await bcrypt.hash(password, 10);
 
     await User.create({
-      name,
       email: emailTolowerCase,
       password: passwordHash,
     });
@@ -51,11 +50,9 @@ async function login(req, res, next) {
       res.status(401).send({ message: "Email or password is wrong" });
     }
 
-    const token = jwt.sign(
-      { id: user._id, name: user.name },
-      process.env.JWT_SECRET,
-      { expiresIn: 3600 }
-    );
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+      expiresIn: 3600,
+    });
 
     await User.findByIdAndUpdate(user._id, { token });
 
