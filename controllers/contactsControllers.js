@@ -13,15 +13,12 @@ const getAllContacts = async (req, res, next) => {
 
 const getOneContact = async (req, res, next) => {
   const { id } = req.params;
+  const owner = req.user.id;
 
   try {
-    const contact = await Contact.findById(id);
+    const contact = await Contact.findOne({ _id: id, owner });
 
     if (contact === null) {
-      throw HttpError(404);
-    }
-
-    if (contact.owner.toString() !== req.user.id) {
       throw HttpError(404);
     }
 
@@ -51,18 +48,18 @@ const createContact = async (req, res, next) => {
 
 const updateContact = async (req, res, next) => {
   const { id } = req.params;
-  const contact = req.body;
+  const owner = req.user.id;
 
   try {
-    const updatedContact = await Contact.findByIdAndUpdate(id, contact, {
-      new: true,
-    });
+    const updatedContact = await Contact.findOneAndUpdate(
+      { _id: id, owner },
+      req.body,
+      {
+        new: true,
+      }
+    );
 
     if (updatedContact === null) {
-      throw HttpError(404);
-    }
-
-    if (updatedContact.owner.toString() !== req.user.id) {
       throw HttpError(404);
     }
 
@@ -74,15 +71,11 @@ const updateContact = async (req, res, next) => {
 
 const deleteContact = async (req, res, next) => {
   const { id } = req.params;
+  const owner = req.user.id;
 
   try {
-    const contact = await Contact.findByIdAndDelete(id);
-
-    if (contact === null) {
-      throw HttpError(404);
-    }
-
-    if (contact.owner.toString() !== req.user.id) {
+    const contact = await Contact.findOne({ _id: id, owner });
+    if (!contact) {
       throw HttpError(404);
     }
 
@@ -94,12 +87,17 @@ const deleteContact = async (req, res, next) => {
 
 const updateStatusContact = async (req, res, next) => {
   const { id } = req.params;
+  const owner = req.user.id;
   const favorite = req.body.favorite;
 
   try {
-    const updatedContact = await Contact.findByIdAndUpdate(id, favorite, {
-      new: true,
-    });
+    const updatedContact = await Contact.findOneAndUpdate(
+      { _id: id, owner },
+      favorite,
+      {
+        new: true,
+      }
+    );
 
     if (updatedContact === null) {
       throw HttpError(404);
