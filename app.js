@@ -1,10 +1,8 @@
-import "dotenv/config";
 import express from "express";
-import mongoose from "mongoose";
 import morgan from "morgan";
 import cors from "cors";
 
-import contactsRouter from "./routes/index.js";
+import router from "./routes/index.js";
 
 import "./db/db.js";
 
@@ -14,7 +12,7 @@ app.use(morgan("tiny"));
 app.use(cors());
 app.use(express.json());
 
-app.use("/api", contactsRouter);
+app.use("/api", router);
 
 app.use((_, res, next) => {
   res.status(404).json({ message: "Route not found" });
@@ -25,6 +23,8 @@ app.use((err, req, res, next) => {
   res.status(status).json({ message });
 });
 
-app.listen(3000, () => {
-  console.log("Server is running. Use our API on port: 3000");
+const PORT = process.env.port || 3000;
+
+app.listen(PORT, () => {
+  console.log(`Server is running. Use our API on port: ${PORT}`);
 });
