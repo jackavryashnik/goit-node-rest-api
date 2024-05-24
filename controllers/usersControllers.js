@@ -2,6 +2,9 @@ import bcrypt from "bcrypt";
 import User from "../models/user.js";
 import jwt from "jsonwebtoken";
 import gravatar from "gravatar";
+import * as fs from "node:fs/promises";
+import path from "node:path";
+import Jimp from "jimp";
 
 async function register(req, res, next) {
   const { email, password } = req.body;
@@ -96,9 +99,45 @@ async function current(req, res, next) {
   res.send({ message: "Current" });
 }
 
+async function changeAvatar(req, res, next) {
+  try {
+    await fs.rename(
+      req.file.path,
+      path.resolve("public/avatars", req.file.filename)
+    );
+
+    const user = await User.findByIdAndUpdate(
+      req.user.id,
+      { avatarURL: req.file.filename },
+      { new: true }
+    );
+
+    if (user === null) {
+      res.status(404).send({ message: "User not found" });
+    }
+
+    if (user.avatarURL === null) {
+      res.status(404).send({ message: "Avatar not found" });
+    }
+
+    const resizedAvatar = await Jimp.read(
+      path.resolve("public/avatars", req.file.filename)
+    ).then((avatar) => {
+      return avatar.resize(250, 250);
+    });
+
+    res.status(200).send({
+      avatarURL: user.avatarURL,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
 export default {
   register,
   login,
   logout,
   current,
+  changeAvatar,
 };
