@@ -20,7 +20,7 @@ async function register(req, res, next) {
 
     const passwordHash = await bcrypt.hash(password, 10);
 
-    const avatarURL = gravatar.profile_url(emailTolowerCase);
+    const avatarURL = gravatar.url(emailTolowerCase);
 
     await User.create({
       email: emailTolowerCase,
@@ -108,7 +108,7 @@ async function changeAvatar(req, res, next) {
 
     const user = await User.findByIdAndUpdate(
       req.user.id,
-      { avatarURL: req.file.filename },
+      { avatarURL: `/avatars/${req.file.filename}` },
       { new: true }
     );
 
@@ -122,9 +122,16 @@ async function changeAvatar(req, res, next) {
 
     const resizedAvatar = await Jimp.read(
       path.resolve("public/avatars", req.file.filename)
-    ).then((avatar) => {
-      return avatar.resize(250, 250);
-    });
+    )
+      .then((avatar) => {
+        return avatar.resize(250, 250);
+      })
+      .then(async (result) => {
+        const img = await result.getBase64Async(Jimp.MIME_JPEG);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
 
     res.status(200).send({
       avatarURL: user.avatarURL,
