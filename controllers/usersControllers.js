@@ -101,10 +101,16 @@ async function current(req, res, next) {
 
 async function changeAvatar(req, res, next) {
   try {
-    await fs.rename(
-      req.file.path,
-      path.resolve("public/avatars", req.file.filename)
-    );
+    if (!req.file) {
+      throw HttpError(400, "No file uploaded");
+    }
+
+    const publicPath = path.resolve("public/avatars", req.file.filename);
+
+    await fs.rename(req.file.path, publicPath);
+
+    const image = await Jimp.read(publicPath);
+    await image.resize(250, 250).writeAsync(publicPath);
 
     const user = await User.findByIdAndUpdate(
       req.user.id,
@@ -120,22 +126,7 @@ async function changeAvatar(req, res, next) {
       res.status(404).send({ message: "Avatar not found" });
     }
 
-    const resizedAvatar = await Jimp.read(
-      path.resolve("public/avatars", req.file.filename)
-    )
-      .then((avatar) => {
-        return avatar.resize(250, 250);
-      })
-      .then(async (result) => {
-        const img = await result.getBase64Async(Jimp.MIME_JPEG);
-      })
-      .catch((err) => {
-        console.log(err);
-      });
-
-    res.status(200).send({
-      avatarURL: user.avatarURL,
-    });
+    res.send({ avatarURL });
   } catch (error) {
     next(error);
   }
