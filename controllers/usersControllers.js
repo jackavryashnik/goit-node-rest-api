@@ -92,9 +92,31 @@ async function current(req, res, next) {
   res.send({ message: "Current" });
 }
 
+async function verify(req, res, next) {
+  const { verificationToken } = req.body;
+
+  try {
+    const user = await User.findOne({ verificationToken });
+
+    if (user === null) {
+      req.status(404).send({ message: "User not found" });
+    }
+
+    await User.findByIdAndUpdate(user._id, {
+      verify: true,
+      verificationToken: null,
+    });
+
+    req.status(200).send({ message: "Verification successful" });
+  } catch (error) {
+    next(error);
+  }
+}
+
 export default {
   register,
   login,
   logout,
   current,
+  verify,
 };

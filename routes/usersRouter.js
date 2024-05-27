@@ -13,5 +13,6 @@ router.post("/register", jsonParser, validateBody(registerUserSchema), UsersCont
 router.post("/login", jsonParser, validateBody(loginUserSchema), UsersController.login);
 router.post("/logout", authMiddle, UsersController.logout);
 router.post("/current", authMiddle, UsersController.current);
+router.get("/verify/:verificationToken", UsersController.verify)
 
 export default router;
