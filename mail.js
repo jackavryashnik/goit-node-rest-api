@@ -1,4 +1,3 @@
-import "dotenv/config";
 import nodemailer from "nodemailer";
 
 const transporter = nodemailer.createTransport({
@@ -14,4 +13,4 @@ function sendMail(message) {
   transporter.sendMail(message);
 }
 
-export default sendMail;
+export default { sendMail };

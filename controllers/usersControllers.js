@@ -1,6 +1,8 @@
 import bcrypt from "bcrypt";
+import crypto from "node:crypto";
 import User from "../models/user.js";
 import jwt from "jsonwebtoken";
+import mail from "../mail.js";
 
 async function register(req, res, next) {
   const { email, password } = req.body;
@@ -15,10 +17,20 @@ async function register(req, res, next) {
     }
 
     const passwordHash = await bcrypt.hash(password, 10);
+    const verificationToken = crypto.randomUUID();
 
     await User.create({
       email: emailTolowerCase,
       password: passwordHash,
+      verificationToken,
+    });
+
+    mail.sendMail({
+      to: emailTolowerCase,
+      from: "vryasha@meta.ua",
+      subject: "Welcome to contact app",
+      html: `To confirm Your email please click on the <a href="http://localhost:3000/api/users/verify/${verificationToken}">link</a>`,
+      text: "To confirm Your email please click on the link",
     });
 
     res.status(201).send({
