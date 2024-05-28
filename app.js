@@ -4,9 +4,11 @@ import cors from "cors";
 
 import router from "./routes/index.js";
 
-import "./db/db.js";
-
 const app = express();
+
+export default app;
+
+import "./db/db.js";
 
 app.use(morgan("tiny"));
 app.use(cors());
@@ -23,8 +25,3 @@ app.use((err, req, res, next) => {
   res.status(status).json({ message });
 });
 
-const PORT = process.env.port || 3000;
-
-app.listen(PORT, () => {
-  console.log(`Server is running. Use our API on port: ${PORT}`);
-});
