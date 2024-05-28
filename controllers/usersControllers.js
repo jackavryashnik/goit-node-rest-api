@@ -139,6 +139,10 @@ async function resend(req, res, next) {
   try {
     const user = await User.findOne({ email });
 
+    if (user === null) {
+      res.status(404).send({ message: "User not found" });
+    }
+
     if (user.verify === true) {
       return res.status(400).send({
         message: "Verification has already been passed",
