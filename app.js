@@ -4,11 +4,9 @@ import cors from "cors";
 
 import router from "./routes/index.js";
 
-const app = express();
-
-export default app;
-
 import "./db/db.js";
+
+const app = express();
 
 app.use(morgan("tiny"));
 app.use(cors());
@@ -25,3 +23,4 @@ app.use((err, req, res, next) => {
   res.status(status).json({ message });
 });
 
+export default app;
