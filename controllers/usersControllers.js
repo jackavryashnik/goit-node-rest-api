@@ -30,7 +30,7 @@ async function register(req, res, next) {
       from: "vryasha@meta.ua",
       subject: "Welcome to contact app",
       html: `To confirm Your email please click on the <a href="http://localhost:3000/api/users/verify/${verificationToken}">link</a>`,
-      text: "To confirm Your email please click on the link",
+      text: `To confirm Your email please open the link http://localhost:3000/api/users/verify/${verificationToken}`,
     });
 
     res.status(201).send({
@@ -53,13 +53,17 @@ async function login(req, res, next) {
     const user = await User.findOne({ email: emailToLowercase });
 
     if (user === null) {
-      res.status(401).send({ message: "Email or password is wrong" });
+      return res.status(401).send({ message: "Email or password is wrong" });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
 
     if (isMatch === false) {
-      res.status(401).send({ message: "Email or password is wrong" });
+      return res.status(401).send({ message: "Email or password is wrong" });
+    }
+
+    if (user.verify === false) {
+      return res.status(401).send({ message: "Please verify Your email" });
     }
 
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
@@ -105,13 +109,13 @@ async function current(req, res, next) {
 }
 
 async function verify(req, res, next) {
-  const { verificationToken } = req.body;
+  const { verificationToken } = req.params;
 
   try {
     const user = await User.findOne({ verificationToken });
 
     if (user === null) {
-      req.status(404).send({ message: "User not found" });
+      res.status(404).send({ message: "User not found" });
     }
 
     await User.findByIdAndUpdate(user._id, {
@@ -119,7 +123,37 @@ async function verify(req, res, next) {
       verificationToken: null,
     });
 
-    req.status(200).send({ message: "Verification successful" });
+    res.status(200).send({ message: "Verification successful" });
+  } catch (error) {
+    next(error);
+  }
+}
+
+async function resend(req, res, next) {
+  const { email } = req.body;
+
+  if (typeof email === "undefined") {
+    res.status(400).send({ message: "missing required field email" });
+  }
+
+  try {
+    const user = await User.findOne({ email });
+
+    if (user.verify === true) {
+      return res.status(400).send({
+        message: "Verification has already been passed",
+      });
+    }
+
+    mail.sendMail({
+      to: email,
+      from: "vryasha@meta.ua",
+      subject: "Welcome to contact app",
+      html: `To confirm Your email please click on the <a href="http://localhost:3000/api/users/verify/${user.verificationToken}">link</a>`,
+      text: `To confirm Your email please open the link http://localhost:3000/api/users/verify/${user.verificationToken}`,
+    });
+
+    res.status(200).send({ message: "Verification email sent" });
   } catch (error) {
     next(error);
   }
@@ -131,4 +165,5 @@ export default {
   logout,
   current,
   verify,
+  resend,
 };
