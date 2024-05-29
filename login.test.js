@@ -1,14 +1,17 @@
+import { jest } from '@jest/globals';
+import "dotenv/config";
 import supertest from "supertest";
 import mongoose from "mongoose";
 import app from "./app.js";
+import User from "./models/user.js";
 
-const { login } = (await import("./controllers/usersControllers.js")).default;
 
 mongoose.set("strictQuery", false);
 const DB_TEST_URI = process.env.DB_TEST_URI;
-jest.mock('../db/models/User.js');
 
-console.log('env db', DB_TEST_URI);
+jest.mock('./models/user.js');
+
+console.log("env db", DB_TEST_URI);
 
 describe("login", () => {
   beforeAll(async () => {
@@ -52,9 +55,10 @@ describe("login", () => {
     });
 
     expect(response.statusCode).toBe(200);
-    expect(response.body.data.user.email).toBe({
-      token,
-      user: { email: "testUser1@gmail.com", subscription: "starter" },
-    });
+    expect(response.body).toHaveProperty("token");
+    expect(response.body.email).toBe("testUser1@gmail.com");
+    expect(response.body.subscription).toBe("starter");
+    expect(typeof response.body.email).toBe("string");
+    expect(typeof response.body.subscription).toBe("string");
   });
 });
