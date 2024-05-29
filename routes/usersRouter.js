@@ -1,6 +1,7 @@
 import express from "express";
 
 import authMiddle from "../middleware/auth.js";
+import avatarMiddle from "../middleware/upload.js"
 import validateBody from "../helpers/validateBody.js";
 import {registerUserSchema, loginUserSchema, emailSchema} from '../schemas/usersSchemas.js'
 
@@ -15,5 +16,6 @@ router.post("/logout", authMiddle, UsersController.logout);
 router.post("/current", authMiddle, UsersController.current);
 router.get("/verify/:verificationToken", UsersController.verify)
 router.post("/verify", validateBody(emailSchema), UsersController.resend)
+router.patch("/avatars", authMiddle, avatarMiddle.single("avatar"), UsersController.changeAvatar);
 
 export default router;

@@ -3,6 +3,10 @@ import crypto from "node:crypto";
 import User from "../models/user.js";
 import jwt from "jsonwebtoken";
 import mail from "../mail.js";
+import gravatar from "gravatar";
+import * as fs from "node:fs/promises";
+import path from "node:path";
+import Jimp from "jimp";
 
 async function register(req, res, next) {
   const { email, password } = req.body;
@@ -19,10 +23,13 @@ async function register(req, res, next) {
     const passwordHash = await bcrypt.hash(password, 10);
     const verificationToken = crypto.randomUUID();
 
+    const avatarURL = gravatar.url(emailTolowerCase);
+
     await User.create({
       email: emailTolowerCase,
       password: passwordHash,
       verificationToken,
+      avatarURL,
     });
 
     mail.sendMail({
@@ -108,11 +115,40 @@ async function current(req, res, next) {
   res.send({ message: "Current" });
 }
 
+async function changeAvatar(req, res, next) {
+  try {
+    if (!req.file) {
+      throw HttpError(400, "No file uploaded");
+    }
+
+    const publicPath = path.resolve("public/avatars", req.file.filename);
+
+    await fs.rename(req.file.path, publicPath);
+
+    const image = await Jimp.read(publicPath);
+    await image.resize(250, 250).writeAsync(publicPath);
+
+    const user = await User.findByIdAndUpdate(
+      req.user.id,
+      { avatarURL: `/avatars/${req.file.filename}` },
+      { new: true }
+    );
+    if (user.avatarURL === null) {
+      res.status(404).send({ message: "Avatar not found" });
+    }
+
+    res.send({ avatarURL });
+  } catch (error) {
+    next(error);
+  }
+}
+
 async function verify(req, res, next) {
   const { verificationToken } = req.params;
 
   try {
     const user = await User.findOne({ verificationToken });
+
 
     if (user === null) {
       res.status(404).send({ message: "User not found" });
@@ -158,16 +194,18 @@ async function resend(req, res, next) {
     });
 
     res.status(200).send({ message: "Verification email sent" });
-  } catch (error) {
-    next(error);
+  } catch(error) {
+    next(error)
   }
 }
+
 
 export default {
   register,
   login,
   logout,
   current,
+  changeAvatar,
   verify,
   resend,
 };
