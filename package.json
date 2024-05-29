@@ -25,5 +25,10 @@
     "jest": "^29.7.0",
     "nodemon": "^3.0.2",
     "supertest": "^7.0.0"
-  }
+  },
+  "version": "1.0.0",
+  "main": "app.js",
+  "author": "",
+  "license": "ISC",
+  "description": ""
 }
