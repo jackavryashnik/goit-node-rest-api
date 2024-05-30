@@ -32,13 +32,9 @@ async function register(req, res, next) {
       avatarURL,
     });
 
-    mail.sendMail({
-      to: emailTolowerCase,
-      from: "vryasha@meta.ua",
-      subject: "Welcome to contact app",
-      html: `To confirm Your email please click on the <a href="http://localhost:3000/api/users/verify/${verificationToken}">link</a>`,
-      text: `To confirm Your email please open the link http://localhost:3000/api/users/verify/${verificationToken}`,
-    });
+    const message = mail.generateMail(emailTolowerCase, user);
+
+    mail.sendMail(message);
 
     res.status(201).send({
       user: {
@@ -149,7 +145,6 @@ async function verify(req, res, next) {
   try {
     const user = await User.findOne({ verificationToken });
 
-
     if (user === null) {
       res.status(404).send({ message: "User not found" });
     }
@@ -185,20 +180,15 @@ async function resend(req, res, next) {
       });
     }
 
-    mail.sendMail({
-      to: email,
-      from: "vryasha@meta.ua",
-      subject: "Welcome to contact app",
-      html: `To confirm Your email please click on the <a href="http://localhost:3000/api/users/verify/${user.verificationToken}">link</a>`,
-      text: `To confirm Your email please open the link http://localhost:3000/api/users/verify/${user.verificationToken}`,
-    });
+    const message = mail.generateMail(email, user);
+
+    mail.sendMail(message);
 
     res.status(200).send({ message: "Verification email sent" });
-  } catch(error) {
-    next(error)
+  } catch (error) {
+    next(error);
   }
 }
-
 
 export default {
   register,

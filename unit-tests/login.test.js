@@ -2,9 +2,6 @@ import { jest } from "@jest/globals";
 import supertest from "supertest";
 import app from "../app.js";
 
-jest.mock("../models/User.js");
-
-
 // Should be real user data
 const email = "yevhen@gmail.com";
 const password = "12345678";
